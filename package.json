@@ -1,0 +1,17 @@
+{
+  "name": "man-child-ministry",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application Man Child Ministry : lire, rechercher et étudier les prédications des conventions.",
+  "scripts": {
+    "android:prepare": "cap add android && capacitor-assets generate --android && cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.2"
+  }
+}

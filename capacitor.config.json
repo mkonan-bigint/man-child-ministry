@@ -1,0 +1,8 @@
+{
+  "appId": "ci.bigintanalytics.manchildministry",
+  "appName": "Man Child Ministry",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#24123F"
+  }
+}

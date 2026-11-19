@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#24123F">
+<title>Man Child Ministry</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Man Child">
+<script src="config.js"></script>
+<style>
+@font-face{font-family:Inter;font-weight:400;font-display:swap;src:url(fonts/inter-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(fonts/inter-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-weight:600;font-display:swap;src:url(fonts/inter-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:Cinzel;font-weight:500;font-display:swap;src:url(fonts/cinzel-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:Cinzel;font-weight:700;font-display:swap;src:url(fonts/cinzel-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Source Serif 4";font-weight:400;font-display:swap;src:url(fonts/source-serif-4-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Source Serif 4";font-weight:600;font-display:swap;src:url(fonts/source-serif-4-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Source Serif 4";font-weight:400;font-style:italic;font-display:swap;src:url(fonts/source-serif-4-latin-400-italic.woff2) format("woff2")}
+:root{
+  --royal:#24123F; --royal-2:#3A2163; --royal-3:#5B3A8E;
+  --gold:#D4A84B; --gold-soft:#F1DFA9; --fire:#E2622B;
+  --bg:#FAF6EE; --card:#FFFFFF; --ink:#22192F; --muted:#6F6680; --line:#E9E1D2;
+  --mark:#FBE3A0; --reader-size:19px;
+  --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
+}
+body.dark{
+  --bg:#140B24; --card:#1E1333; --ink:#EEE7F7; --muted:#A99BC0; --line:#2F2148; --mark:#6B4E12;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.app{max-width:760px;margin:0 auto;min-height:100vh;padding-bottom:calc(76px + var(--safe-bot))}
+/* Header */
+.top{position:sticky;top:0;z-index:10;background:var(--royal);color:#fff;padding:calc(10px + var(--safe-top)) 16px 10px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.top .brand{font-family:Cinzel,serif;font-weight:700;letter-spacing:.06em;font-size:17px;line-height:1.1}
+.top .brand small{display:block;font-family:Inter;font-weight:400;letter-spacing:0;font-size:11px;color:var(--gold-soft);opacity:.9}
+.top .sp{flex:1}
+.icon-btn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center}
+.icon-btn:hover{background:rgba(255,255,255,.1)}
+.icon-btn svg{width:22px;height:22px}
+.back{display:none}
+.view{padding:16px}
+/* Hero */
+.hero{background:linear-gradient(160deg,var(--royal) 0%,var(--royal-2) 60%,var(--royal-3) 100%);color:#fff;border-radius:20px;padding:22px 20px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(212,168,75,.35),transparent 70%)}
+.hero .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-soft)}
+.hero h1{font-family:Cinzel,serif;font-size:21px;line-height:1.3;margin:8px 0 6px;font-weight:500}
+.hero p{margin:0;color:#DCD0EE;font-size:13px}
+.stats{display:flex;gap:18px;margin-top:16px}
+.stats b{display:block;font-size:20px;color:var(--gold)}
+.stats span{font-size:11px;color:#CDBFE3}
+.searchbar{margin:16px 0 4px;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:var(--muted)}
+.searchbar svg{width:18px;height:18px;flex:none}
+h2.sec{font-family:Cinzel,serif;font-size:14px;letter-spacing:.08em;color:var(--royal-3);margin:22px 2px 10px;font-weight:700}
+body.dark h2.sec{color:var(--gold)}
+/* Cards */
+.day{font-size:12px;color:var(--muted);margin:14px 2px 6px;text-transform:uppercase;letter-spacing:.08em}
+.card{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px;transition:transform .12s}
+.card:active{transform:scale(.99)}
+.card .meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;border-radius:99px;padding:3px 9px}
+.pill.m{background:#FFF1D6;color:#9A6A0B} .pill.s{background:#E8E0F6;color:#4A2E7A}
+body.dark .pill.m{background:#3D2E10;color:var(--gold-soft)} body.dark .pill.s{background:#2E2050;color:#CDBFF0}
+.card h3{font-family:"Source Serif 4",serif;font-size:18px;margin:8px 0 8px;line-height:1.3;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:11.5px;border:1px solid var(--line);border-radius:99px;padding:4px 10px;color:var(--muted);background:transparent}
+.chip.on{background:var(--royal);border-color:var(--royal);color:#fff}
+/* Reader */
+.r-head{padding:6px 2px 14px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.r-series{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.r-title{font-family:Cinzel,serif;font-size:24px;line-height:1.3;margin:8px 0;font-weight:700;color:var(--royal-2)}
+body.dark .r-title{color:var(--gold-soft)}
+.r-meta{font-size:13px;color:var(--muted);line-height:1.6}
+.r-tools{display:flex;gap:8px;margin:12px 0 4px;flex-wrap:wrap}
+.tool{border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:13px;background:var(--card)}
+.para{position:relative;font-family:"Source Serif 4",serif;font-size:var(--reader-size);line-height:1.7;margin:0;padding:8px 8px 8px 36px;border-radius:10px}
+.para .n{position:absolute;left:4px;top:12px;font-family:Inter;font-size:10.5px;color:var(--muted);width:26px;text-align:right}
+.para.note{font-style:italic;color:var(--muted);font-size:calc(var(--reader-size) - 3px)}
+.para.fav{background:linear-gradient(90deg,rgba(212,168,75,.18),transparent)}
+.para.fav .n{color:var(--gold);font-weight:700}
+.para.flash{animation:flash 2.4s ease}
+@keyframes flash{0%,40%{background:rgba(226,98,43,.18)}100%{background:transparent}}
+mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
+.ref{font-weight:600;color:var(--royal-3);border-bottom:1px dotted currentColor}
+body.dark .ref{color:var(--gold)}
+/* Sheet */
+.sheet-bg{position:fixed;inset:0;background:rgba(10,5,20,.45);z-index:30;display:none}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--card);border-radius:20px 20px 0 0;padding:16px 16px calc(16px + var(--safe-bot));max-width:760px;margin:0 auto;transform:translateY(110%);transition:transform .22s}
+.sheet.open{transform:none}
+.sheet .q{font-family:"Source Serif 4",serif;font-size:15px;color:var(--muted);max-height:96px;overflow:hidden;margin-bottom:12px;border-left:3px solid var(--gold);padding-left:10px}
+.sheet .row{display:flex;gap:8px;flex-wrap:wrap}
+.sheet .act{flex:1;min-width:120px;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;text-align:center}
+.sheet textarea{width:100%;margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink);min-height:70px}
+/* Search */
+.sinput{width:100%;border:1.5px solid var(--royal-3);border-radius:14px;padding:13px 14px;font-size:16px;background:var(--card);color:var(--ink);outline:none}
+.hint{font-size:12.5px;color:var(--muted);margin:8px 2px;line-height:1.5}
+.res-group{margin-top:16px}
+.res-title{font-weight:600;font-size:14px;margin:0 2px 6px;display:flex;justify-content:space-between;gap:8px}
+.res-title span{color:var(--muted);font-weight:400;font-size:12px;flex:none}
+.res{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:6px;font-family:"Source Serif 4",serif;font-size:15px;line-height:1.5}
+.res small{display:block;font-family:Inter;font-size:11px;color:var(--muted);margin-bottom:3px}
+/* Themes */
+.theme{display:flex;align-items:center;gap:12px}
+.theme .bar{height:6px;border-radius:6px;background:linear-gradient(90deg,var(--gold),var(--fire));margin-top:6px}
+.theme .t{flex:1}
+.theme .c{font-size:12px;color:var(--muted)}
+.refgrid{display:flex;flex-wrap:wrap;gap:6px}
+.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px;line-height:1.6}
+/* Bottom nav */
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:var(--card);border-top:1px solid var(--line);padding-bottom:var(--safe-bot)}
+.nav .in{max-width:760px;margin:0 auto;display:flex}
+.nav button{flex:1;padding:9px 0 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted)}
+.nav button svg{width:22px;height:22px}
+.nav button.on{color:var(--royal-3)}
+body.dark .nav button.on{color:var(--gold)}
+.toast{position:fixed;left:50%;bottom:calc(90px + var(--safe-bot));transform:translateX(-50%);background:var(--royal);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;opacity:0;transition:opacity .2s;z-index:40;pointer-events:none}
+.toast.show{opacity:1}
+.brandmark{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:10px}
+.brandmark .sw{display:flex;gap:6px;margin-top:6px}
+.brandmark .sw i{width:22px;height:22px;border-radius:6px;display:block}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="gFire" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#E2622B"/><stop offset=".55" stop-color="#F0A33A"/><stop offset="1" stop-color="#FCE6A6"/></linearGradient>
+    <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F1DFA9"/><stop offset="1" stop-color="#C08A2E"/></linearGradient>
+    <symbol id="logo" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="31" fill="#24123F"/>
+      <circle cx="32" cy="32" r="29.5" fill="none" stroke="url(#gGold)" stroke-width="1.2" opacity=".8"/>
+      <!-- rayons de lumière -->
+      <g stroke="#F1DFA9" stroke-width="1.3" stroke-linecap="round" opacity=".85">
+        <line x1="32" y1="5.5" x2="32" y2="10"/><line x1="21" y1="9" x2="23.5" y2="13"/><line x1="43" y1="9" x2="40.5" y2="13"/>
+        <line x1="13.5" y1="16" x2="17.5" y2="18.5"/><line x1="50.5" y1="16" x2="46.5" y2="18.5"/>
+      </g>
+      <!-- flamme / pierre de faîte -->
+      <path d="M32 12c2.6 3 5.6 6.2 5.6 9.4 0 1.2-.3 2.2-.8 3.1L32 21l-4.8 3.5c-.5-.9-.8-1.9-.8-3.1 0-3.2 3-6.4 5.6-9.4z" fill="url(#gFire)"/>
+      <path d="M32 21.6l8.6 6.4H23.4z" fill="url(#gGold)"/>
+      <!-- pyramide (le corps du temple) -->
+      <path d="M22.2 30.5h19.6L52 51H12z" fill="none" stroke="url(#gGold)" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M18 39h28M14.8 45.2h34.4" stroke="#D4A84B" stroke-width="1.1" opacity=".55"/>
+      <path d="M32 30.5V51" stroke="#D4A84B" stroke-width="1.1" opacity=".35"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <header class="top">
+    <button class="icon-btn back" id="backBtn" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <svg width="36" height="36" id="topLogo"><use href="#logo"/></svg>
+    <div class="brand">MAN CHILD MINISTRY<small id="subtitle">Bibliothèque des prédications</small></div>
+    <div class="sp"></div>
+    <button class="icon-btn" id="darkBtn" aria-label="Mode nuit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
+  </header>
+  <main id="view" class="view"></main>
+</div>
+
+<nav class="nav"><div class="in">
+  <button data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5z"/><path d="M4 19.5A2.5 2.5 0 006.5 22H20v-5"/></svg>Bibliothèque</button>
+  <button data-tab="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Rechercher</button>
+  <button data-tab="themes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3c2.5 3 5 5.6 5 8.6A5 5 0 0112 17a5 5 0 01-5-5.4C7 8.6 9.5 6 12 3z"/><path d="M5 21h14"/></svg>Thèmes</button>
+  <button data-tab="favs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Favoris</button>
+</div></nav>
+
+<div class="sheet-bg" id="sheetBg"></div>
+<div class="sheet" id="sheet"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const view = $("#view");
+let LIB = null, IDX = [];
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem("mcm:"+k); return v ? JSON.parse(v) : d }catch(e){ return d } },
+  set(k, v){ try{ localStorage.setItem("mcm:"+k, JSON.stringify(v)) }catch(e){} }
+};
+let favs = store.get("favs", {});          // key "sid|i" -> {note, at}
+let fontSize = store.get("font", 19);
+let dark = store.get("dark", false);
+let lastQuery = "";
+document.documentElement.style.setProperty("--reader-size", fontSize + "px");
+if (dark) document.body.classList.add("dark");
+
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[’']/g, "'");
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const MONTHS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const fmtDate = d => { const [y,m,dd] = d.split("-"); return `${+dd} ${MONTHS[m-1]} ${y}` };
+const sermon = id => LIB.sermons.find(s => s.id === id);
+const conv = id => LIB.conventions.find(c => c.id === id);
+const MABR = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+const shortDates = c => { const [y1,m1,d1] = c.start.split("-"), [y2,m2,d2] = c.end.split("-");
+  return m1 === m2 ? `${+d1}–${+d2} ${MABR[m1-1]} ${y1}` : `${+d1} ${MABR[m1-1]} – ${+d2} ${MABR[m2-1]} ${y2}` };
+let convFilter = "";   // filtre de convention (recherche / thèmes)
+function convChips(){
+  if (LIB.conventions.length < 2) return "";
+  return `<div class="chips" id="convChips" style="margin:10px 0 4px"><button class="chip ${convFilter ? "" : "on"}" data-cf="">Toutes les conventions</button>` +
+    LIB.conventions.map(c => `<button class="chip ${convFilter === c.id ? "on" : ""}" data-cf="${c.id}">${esc(c.city)} · ${c.start.slice(0,4)}</button>`).join("") + `</div>`;
+}
+function bindConvChips(after){ view.querySelectorAll("[data-cf]").forEach(b => b.onclick = () => { convFilter = b.dataset.cf; after() }) }
+const inFilter = sid => !convFilter || sermon(sid).conv === convFilter;
+const sidHash = id => id.toLowerCase();
+const sidFromHash = h => LIB.sermons.find(s => s.id.toLowerCase() === h);
+const toast = msg => { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 1800) };
+
+// Surlignage insensible aux accents : on cherche dans la version normalisée et on reporte les positions.
+function highlight(text, terms){
+  if (!terms || !terms.length) return esc(text);
+  const n = norm(text); const ranges = [];
+  terms.forEach(t => { if (!t) return; let i = 0; while ((i = n.indexOf(t, i)) !== -1){ ranges.push([i, i + t.length]); i += t.length } });
+  if (!ranges.length) return esc(text);
+  ranges.sort((a,b) => a[0]-b[0]); const merged = [];
+  ranges.forEach(r => { const l = merged[merged.length-1]; if (l && r[0] <= l[1]) l[1] = Math.max(l[1], r[1]); else merged.push(r.slice()) });
+  let out = "", p = 0;
+  merged.forEach(([a,b]) => { out += esc(text.slice(p,a)) + "<mark>" + esc(text.slice(a,b)) + "</mark>"; p = b });
+  return out + esc(text.slice(p));
+}
+
+// variantes d'orthographe fréquentes dans les transcriptions
+const VARIANTS = [
+  [/melchised(ech|eck|ek|ec)/, ["melchisedech","melchisedek","melchisedeck","melchisedec"]],
+  [/enfant[- ]male/, ["enfant male","enfant-male"]],
+  [/pierre de faite/, ["pierre de faite","pierre de faîte"]],
+];
+function expand(t){
+  for (const [re, alts] of VARIANTS) if (re.test(t)) return [...new Set(alts.map(a => t.replace(re, a)))];
+  return [t];
+}
+function parseQuery(q){
+  const phrases = []; q = q.replace(/"([^"]+)"/g, (_, p) => { phrases.push(norm(p.trim())); return " " });
+  let rest = norm(q);
+  const groups = phrases.map(expand);
+  // expressions composées connues traitées comme un seul terme
+  // références bibliques : "apocalypse 12" trouve aussi "apocalypse chapitre 12"
+  rest = rest.replace(/([a-z]{3,})\s+(\d{1,3})(?:\s*[:.,]\s*(\d{1,3}))?/g, (m, bk, ch, v) => {
+    if (["le","du","au","les"].includes(bk)) return m;
+    const forms = [`${bk} ${ch}`, `${bk} chapitre ${ch}`, `${bk} le chapitre ${ch}`, `${bk}, chapitre ${ch}`, `${bk}, le chapitre ${ch}`];
+    groups.push(forms.map(f => f + (v ? "" : "")));
+    if (v) groups.push([`${ch}:${v}`, `${ch},${v}`, `${ch}, ${v}`, `verset ${v}`, `${ch} v${v}`]);
+    return " ";
+  });
+  VARIANTS.forEach(([re]) => { const m = rest.match(re); if (m && /\s|-/.test(m[0])){ groups.push(expand(m[0])); rest = rest.replace(m[0], " ") } });
+  rest.split(/[\s,;]+/).filter(w => w.length > 1).forEach(w => groups.push(expand(w)));
+  return { groups, terms: groups.flat() };
+}
+
+// ---------- Routing (#home, #search, #themes, #favs, #t-<id>, #s-<sermon>, #s-<sermon>-p<n>) ----------
+function go(h){ if (location.hash === "#" + h) route(); else location.hash = h }
+window.addEventListener("hashchange", route);
+document.querySelectorAll(".nav button").forEach(b => b.onclick = () => go(b.dataset.tab));
+$("#backBtn").onclick = () => history.length > 1 ? history.back() : go("home");
+$("#darkBtn").onclick = () => { dark = !dark; document.body.classList.toggle("dark", dark); store.set("dark", dark) };
+
+function setChrome(tab, sub, back){
+  document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  $("#subtitle").textContent = sub; $("#backBtn").style.display = back ? "grid" : "none"; $("#topLogo").style.display = back ? "none" : "block";
+}
+
+function route(){
+  const h = (location.hash || "#home").slice(1);
+  window.scrollTo(0, 0);
+  if (h.startsWith("s-")){
+    const m = h.match(/^s-(.+?)(?:-p(\d+))?$/); const s = sidFromHash(m[1]);
+    if (s) return renderReader(s, m[2] ? +m[2] : null);
+  }
+  if (h.startsWith("t-")) return renderTheme(h.slice(2));
+  if (h.startsWith("c-") && conv(h.slice(2))) return renderConvention(conv(h.slice(2)));
+  if (h === "search") return renderSearch();
+  if (h === "themes") return renderThemes();
+  if (h === "favs") return renderFavs();
+  renderHome();
+}
+
+// ---------- Bibliothèque ----------
+function sermonCard(s){
+  const top = Object.entries(s.themes).sort((a,b) => b[1]-a[1]).slice(0,3)
+    .map(([t]) => `<span class="chip">${esc(LIB.themes.find(x => x.id === t).label)}</span>`).join("");
+  return `<button class="card" data-go="s-${sidHash(s.id)}">
+    <div class="meta"><span class="pill ${s.moment === "Matin" ? "m" : "s"}">${s.moment === "Matin" ? "☀" : "☾"} ${s.moment}</span>${s.minutes} min de lecture</div>
+    <h3>${esc(s.title)}</h3><div class="chips">${top}</div></button>`;
+}
+function renderHome(){
+  setChrome("home", "Bibliothèque des prédications", false);
+  const C = LIB.conventions;
+  const countries = new Set(C.map(c => c.country).filter(Boolean));
+  let html = `<section class="hero"><div class="eyebrow">Bibliothèque des prédications</div>
+    <h1>Les messages des conventions</h1><p>Lire, rechercher et étudier les prédications par convention et par thème.</p>
+    <div class="stats"><div><b>${C.length}</b><span>convention${C.length > 1 ? "s" : ""}</span></div><div><b>${LIB.sermons.length}</b><span>prédications</span></div><div><b>${countries.size}</b><span>pays</span></div></div></section>
+    <button class="searchbar" data-go="search" style="width:100%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Rechercher un mot, un verset, une expression…</button>`;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone = window.navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+  if (isIOS && !standalone && !window.Capacitor && !store.get("iosHint", false)){
+    html += `<div class="card" style="border-color:var(--gold)"><div style="font-weight:600;margin-bottom:4px">📲 Installer l'application sur l'iPhone</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.5">Dans Safari, touchez <b>Partager</b> <span style="font-size:15px">⬆︎</span> puis <b>« Sur l'écran d'accueil »</b>. L'application fonctionnera ensuite sans Internet.</div>
+      <button class="tool" style="margin-top:10px" id="hideHint">J'ai compris</button></div>`;
+  }
+  const last = store.get("last", null);
+  if (last && sermon(last.id)){
+    const s = sermon(last.id), c = conv(s.conv);
+    html += `<h2 class="sec">REPRENDRE LA LECTURE</h2><button class="card" data-go="s-${sidHash(s.id)}-p${last.i}"><div class="meta">${esc(c.city)} · ${s.jour} ${s.moment.toLowerCase()} · § ${last.i}</div><h3>${esc(s.title)}</h3></button>`;
+  }
+  html += `<h2 class="sec">LES CONVENTIONS</h2>`;
+  C.forEach(c => html += `<button class="card conv" data-go="c-${c.id}">
+      <div class="meta"><span class="pill s">📍 ${esc(c.city)}${c.country ? ", " + esc(c.country) : ""}</span>${shortDates(c)}</div>
+      <h3>${esc(c.series)}</h3>
+      <div class="meta">${c.count} prédication${c.count > 1 ? "s" : ""} · ${esc(c.preachers.join(", "))}</div></button>`);
+  view.innerHTML = html;
+  const hh = document.getElementById("hideHint"); if (hh) hh.onclick = () => { store.set("iosHint", true); renderHome() };
+}
+function renderConvention(c){
+  setChrome("home", c.name, true);
+  const ss = LIB.sermons.filter(s => s.conv === c.id);
+  let html = `<section class="hero"><div class="eyebrow">${esc(c.name)} · ${esc(c.country)}</div>
+    <h1>${esc(c.series)}</h1><p>${esc(c.preachers.join(", "))}<br>${esc(c.venue ? c.venue + ", " : "")}${esc(c.city)} · ${esc(c.dates)}</p>
+    <div class="stats"><div><b>${ss.length}</b><span>prédications</span></div><div><b>${new Set(ss.map(s => s.date)).size}</b><span>jours</span></div></div></section>`;
+  let day = "";
+  ss.forEach(s => {
+    if (s.date !== day){ day = s.date; html += `<div class="day">${s.jour} ${fmtDate(s.date)}</div>` }
+    html += sermonCard(s);
+  });
+  view.innerHTML = html;
+}
+
+// ---------- Lecteur ----------
+function renderParaText(p, s){
+  let t = highlight(p.t, parseQuery(lastQuery).terms);
+  return t;
+}
+function renderReader(s, focus){
+  const c = conv(s.conv);
+  setChrome("home", `${c.city} · ${s.jour} ${s.moment.toLowerCase()} ${fmtDate(s.date)}`, true);
+  const refs = s.refs.map(r => `<button class="chip" data-q="${esc(r.split(":")[0])}">${esc(r)}</button>`).join("");
+  let html = `<div class="r-head"><button class="r-series" data-go="c-${c.id}" style="text-align:left;padding:0">${esc(c.name)} · ${esc(s.series)}</button><div class="r-title">${esc(s.title)}</div>
+    <div class="r-meta">${esc(s.preacher)}<br>${esc(s.dateLabel)} · ${esc(s.place)}<br>${s.paragraphs.length} paragraphes · ${s.minutes} min</div>
+    ${refs ? `<div class="chips" style="margin-top:10px">${refs}</div>` : ""}
+    <div class="r-tools"><button class="tool" id="fMinus">A−</button><button class="tool" id="fPlus">A+</button>
+    ${lastQuery ? `<button class="tool" id="clearHl">Effacer « ${esc(lastQuery)} »</button>` : ""}</div></div>`;
+  html += s.paragraphs.map(p => `<p class="para ${p.k === "note" ? "note" : ""} ${favs[s.id+"|"+p.i] ? "fav" : ""}" id="p${p.i}" data-i="${p.i}"><span class="n">${p.i}</span>${renderParaText(p, s)}</p>`).join("");
+  view.innerHTML = html;
+  $("#fMinus").onclick = () => setFont(-1); $("#fPlus").onclick = () => setFont(1);
+  if ($("#clearHl")) $("#clearHl").onclick = () => { lastQuery = ""; renderReader(s, null) };
+  view.querySelectorAll(".para").forEach(el => el.onclick = () => openSheet(s, +el.dataset.i));
+  view.querySelectorAll("[data-q]").forEach(el => el.onclick = e => { e.stopPropagation(); searchFor(el.dataset.q) });
+  if (focus){ const el = document.getElementById("p" + focus); if (el){ setTimeout(() => { el.scrollIntoView({block:"center"}); el.classList.add("flash") }, 60) } }
+  // mémoriser la position de lecture
+  clearTimeout(window._rt);
+  window.onscroll = () => { clearTimeout(window._rt); window._rt = setTimeout(() => {
+    const ps = [...view.querySelectorAll(".para")]; const mid = window.innerHeight * .3;
+    const cur = ps.find(p => p.getBoundingClientRect().bottom > mid); if (cur) store.set("last", {id: s.id, i: +cur.dataset.i});
+  }, 300) };
+}
+function setFont(d){ fontSize = Math.min(28, Math.max(14, fontSize + d)); document.documentElement.style.setProperty("--reader-size", fontSize + "px"); store.set("font", fontSize) }
+
+// ---------- Feuille d'actions sur un paragraphe ----------
+function openSheet(s, i){
+  const p = s.paragraphs.find(x => x.i === i); const key = s.id + "|" + i; const f = favs[key];
+  const cite = `« ${p.t} »\n— ${s.preacher}, ${s.title}, ${s.dateLabel}, § ${i}`;
+  $("#sheet").innerHTML = `<div class="q">§ ${i} — ${esc(p.t)}</div>
+    <div class="row"><button class="act" id="aFav">${f ? "★ Retirer des favoris" : "☆ Ajouter aux favoris"}</button><button class="act" id="aCopy">Copier la citation</button></div>
+    <textarea id="aNote" placeholder="Ma note d'étude sur ce passage…">${f && f.note ? esc(f.note) : ""}</textarea>
+    <div class="row" style="margin-top:10px"><button class="act" id="aSave" style="background:var(--royal);color:#fff;border-color:var(--royal)">Enregistrer la note</button></div>`;
+  $("#sheetBg").style.display = "block"; requestAnimationFrame(() => $("#sheet").classList.add("open"));
+  $("#aFav").onclick = () => { if (favs[key]) delete favs[key]; else favs[key] = {note: "", at: Date.now()}; store.set("favs", favs); closeSheet(); document.getElementById("p"+i)?.classList.toggle("fav", !!favs[key]); toast(favs[key] ? "Ajouté aux favoris" : "Retiré des favoris") };
+  $("#aCopy").onclick = async () => { try{ await navigator.clipboard.writeText(cite); toast("Citation copiée") }catch(e){ toast("Copie impossible ici") } };
+  $("#aSave").onclick = () => { const note = $("#aNote").value.trim(); favs[key] = {note, at: Date.now()}; store.set("favs", favs); closeSheet(); document.getElementById("p"+i)?.classList.add("fav"); toast("Note enregistrée") };
+}
+function closeSheet(){ $("#sheet").classList.remove("open"); setTimeout(() => $("#sheetBg").style.display = "none", 200) }
+$("#sheetBg").onclick = closeSheet;
+
+// ---------- Recherche ----------
+function searchFor(q){ lastQuery = q; go("search") }
+function runSearch(q){
+  const {groups} = parseQuery(q);
+  if (!groups.length) return [];
+  return IDX.filter(x => inFilter(x.sid) && groups.every(g => g.some(v => x.n.includes(v))));
+}
+function renderSearch(){
+  setChrome("search", "Recherche dans les prédications", false);
+  view.innerHTML = `<input class="sinput" id="q" type="search" placeholder="Ex. : enfant mâle, Apocalypse 12, \"pierre de faîte\"" value="${esc(lastQuery)}" autocomplete="off">
+    <div class="hint">Les accents et majuscules sont ignorés. Plusieurs mots = passages contenant tous les mots. Mettez une expression entre guillemets pour la chercher telle quelle.</div>
+    ${convChips()}<div class="chips" id="sugg" style="margin-top:8px"></div><div id="results"></div>`;
+  bindConvChips(() => { view.querySelectorAll("[data-cf]").forEach(b => b.classList.toggle("on", b.dataset.cf === convFilter)); doSearch() });
+  const sug = ["enfant mâle","Melchisédech","sept tonnerres","pierre de faîte","immortalité","jour de vengeance","Apocalypse 12","arbre de vie"];
+  $("#sugg").innerHTML = sug.map(s => `<button class="chip" data-s="${esc(s)}">${esc(s)}</button>`).join("");
+  $("#sugg").querySelectorAll("[data-s]").forEach(b => b.onclick = () => { $("#q").value = b.dataset.s; doSearch() });
+  const inp = $("#q"); let t;
+  inp.oninput = () => { clearTimeout(t); t = setTimeout(doSearch, 220) };
+  if (lastQuery) doSearch(); else inp.focus();
+}
+function doSearch(){
+  const q = $("#q").value.trim(); lastQuery = q;
+  const out = $("#results"); if (!q){ out.innerHTML = ""; return }
+  const hits = runSearch(q); const {terms} = parseQuery(q);
+  if (!hits.length){ out.innerHTML = `<div class="empty">Aucun passage ne contient « ${esc(q)} ».</div>`; return }
+  const by = {}; hits.forEach(h => (by[h.sid] ||= []).push(h));
+  let html = `<div class="hint"><b>${hits.length}</b> passage${hits.length > 1 ? "s" : ""} dans <b>${Object.keys(by).length}</b> prédication${Object.keys(by).length > 1 ? "s" : ""}</div>`;
+  LIB.sermons.filter(s => by[s.id]).forEach(s => {
+    const list = by[s.id];
+    html += `<div class="res-group"><div class="res-title">${esc(s.title)}<span>${list.length} · ${esc(conv(s.conv).city)} · ${s.jour.slice(0,3)}. ${s.moment.toLowerCase()}</span></div>`;
+    list.slice(0, 25).forEach(h => html += `<button class="res" data-go="s-${sidHash(s.id)}-p${h.i}"><small>§ ${h.i}</small>${snippet(h.t, terms)}</button>`);
+    if (list.length > 25) html += `<div class="hint">… et ${list.length - 25} autres passages dans cette prédication.</div>`;
+    html += `</div>`;
+  });
+  out.innerHTML = html;
+}
+function snippet(t, terms){
+  const n = norm(t); let pos = Math.min(...terms.map(x => { const i = n.indexOf(x); return i < 0 ? 1e9 : i }));
+  if (pos === 1e9) pos = 0;
+  const a = Math.max(0, pos - 90), b = Math.min(t.length, pos + 170);
+  return (a > 0 ? "… " : "") + highlight(t.slice(a, b), terms) + (b < t.length ? " …" : "");
+}
+
+// ---------- Thèmes ----------
+function themeTotals(){
+  return LIB.themes.map(t => ({...t, total: LIB.sermons.filter(s => inFilter(s.id)).reduce((a,s) => a + (s.themes[t.id] || 0), 0)})).sort((a,b) => b.total - a.total);
+}
+function renderThemes(){
+  setChrome("themes", "Étudier par thème", false);
+  const T = themeTotals().filter(t => t.total); const max = T[0].total;
+  let html = `<div class="hint">Les thèmes sont repérés automatiquement dans le texte. Touchez un thème pour voir les prédications et les passages clés.</div>${convChips()}`;
+  T.forEach(t => html += `<button class="card theme" data-go="t-${t.id}"><div class="t"><b style="font-size:15px">${esc(t.label)}</b><div class="bar" style="width:${Math.max(6, t.total/max*100)}%"></div></div><div class="c">${t.total}</div></button>`);
+  // index des versets
+  const refs = {}; LIB.sermons.filter(s => inFilter(s.id)).forEach(s => s.refs.forEach(r => { const book = r.replace(/ \d.*$/, ""); (refs[book] ||= new Set()).add(s.id) }));
+  html += `<h2 class="sec">LIVRES BIBLIQUES CITÉS</h2><div class="refgrid">` +
+    Object.entries(refs).sort((a,b) => b[1].size - a[1].size).map(([b, set]) => `<button class="chip" data-q="${esc(b)}">${esc(b)} · ${set.size}</button>`).join("") + `</div>`;
+  view.innerHTML = html;
+  view.querySelectorAll("[data-q]").forEach(el => el.onclick = () => searchFor(el.dataset.q));
+  bindConvChips(renderThemes);
+}
+function renderTheme(id){
+  const t = LIB.themes.find(x => x.id === id); if (!t) return renderThemes();
+  setChrome("themes", t.label, true);
+  const kws = t.kws;
+  const ss = LIB.sermons.filter(s => s.themes[id] && inFilter(s.id)).sort((a,b) => b.themes[id] - a.themes[id]);
+  let html = `<div class="r-head"><div class="r-series">Thème d'étude</div><div class="r-title">${esc(t.label)}</div><div class="r-meta">Présent dans ${ss.length} prédication${ss.length > 1 ? "s" : ""}${convFilter ? " · " + esc(conv(convFilter).name) : ""}</div></div>`;
+  html += `<h2 class="sec">OÙ EN EST-IL QUESTION ?</h2>`;
+  ss.forEach(s => html += `<button class="card" data-go="s-${sidHash(s.id)}"><div class="meta"><span class="pill ${s.moment === "Matin" ? "m" : "s"}">${s.moment}</span>${esc(conv(s.conv).city)} · ${fmtDate(s.date)} · ${s.themes[id]} mention${s.themes[id] > 1 ? "s" : ""}</div><h3>${esc(s.title)}</h3></button>`);
+  // passages les plus denses
+  const scored = IDX.filter(x => inFilter(x.sid)).map(x => ({...x, sc: kws.reduce((a,k) => a + x.n.split(k).length - 1, 0)})).filter(x => x.sc).sort((a,b) => b.sc - a.sc || a.t.length - b.t.length).slice(0, 12);
+  html += `<h2 class="sec">PASSAGES CLÉS</h2>`;
+  scored.forEach(h => { const s = sermon(h.sid); html += `<button class="res" data-go="s-${sidHash(s.id)}-p${h.i}"><small>${esc(conv(s.conv).city)} · ${esc(s.title)} · § ${h.i}</small>${snippet(h.t, kws)}</button>` });
+  view.innerHTML = html;
+}
+
+// ---------- Favoris ----------
+function renderFavs(){
+  setChrome("favs", "Mes favoris et notes", false);
+  const items = Object.entries(favs).sort((a,b) => b[1].at - a[1].at);
+  if (!items.length){ view.innerHTML = `<div class="empty">Aucun favori pour l'instant.<br>Pendant la lecture, touchez un paragraphe pour l'ajouter aux favoris ou y écrire une note d'étude.</div>`; return }
+  view.innerHTML = items.map(([k, f]) => { const [sid, i] = k.split("|"); const s = sermon(sid); if (!s) return ""; const p = s.paragraphs.find(x => x.i === +i);
+    return `<button class="res" data-go="s-${sidHash(sid)}-p${i}"><small>${esc(conv(s.conv).city)} · ${esc(s.title)} · § ${i}</small>${esc(p.t.slice(0, 220))}${p.t.length > 220 ? " …" : ""}${f.note ? `<div style="margin-top:8px;font-family:Inter;font-size:13px;color:var(--royal-3)">📝 ${esc(f.note)}</div>` : ""}</button>` }).join("");
+}
+
+// délégation des clics de navigation
+view.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g){ const h = g.dataset.go; if (location.hash !== "#search" && !h.startsWith("search")) lastQuery = ""; go(h) } });
+
+// ---------- Chargement ----------
+// ---------- Chargement et mises à jour ----------
+// 1) bibliothèque embarquée (ou la dernière téléchargée si plus récente) ; 2) en ligne : vérifier la version publiée.
+const CFG = window.MCM_CONFIG || {};
+function loadLib(lib){
+  LIB = lib; IDX = [];
+  LIB.sermons.forEach(s => s.paragraphs.forEach(p => IDX.push({sid: s.id, i: p.i, t: p.t, n: norm(p.t)})));
+  route();
+}
+function cachedLib(){ try{ const t = localStorage.getItem("mcm:lib"); return t ? JSON.parse(t) : null }catch(e){ return null } }
+async function checkUpdate(){
+  if (!CFG.remoteLibrary || !navigator.onLine) return;
+  try{
+    const r = await fetch(CFG.remoteLibrary + "?v=" + Date.now(), {cache: "no-store"});
+    if (!r.ok) return;
+    const lib = await r.json();
+    if (lib.version > LIB.version){
+      try{ localStorage.setItem("mcm:lib", JSON.stringify(lib)) }catch(e){}
+      const added = lib.sermons.length - LIB.sermons.length;
+      loadLib(lib);
+      toast(added > 0 ? `${added} nouvelle${added > 1 ? "s" : ""} prédication${added > 1 ? "s" : ""} ajoutée${added > 1 ? "s" : ""}` : "Bibliothèque mise à jour");
+    }
+  }catch(e){}
+}
+fetch("library.json").then(r => r.json()).then(bundled => {
+  const c = cachedLib();
+  loadLib(c && c.version > (bundled.version || "") ? c : bundled);
+  checkUpdate();
+}).catch(() => { const c = cachedLib(); if (c) loadLib(c); else view.innerHTML = `<div class="empty">Impossible de charger la bibliothèque.</div>` });
+if ("serviceWorker" in navigator && location.protocol === "https:" && !window.Capacitor){
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+})();
+</script>
+</body>
+</html>
