@@ -170,6 +170,9 @@ def clean_title(stem):
     t = re.sub(r"\s+", " ", t).strip(" ._-–")
     return t[:1].upper() + t[1:] if t else "Prédication"
 
+# Lignes d'en-tête à ignorer (bandeaux, numéros de brochure…). Elles ne sont jamais reprises dans le texte.
+IGNORE_RE = re.compile(r"(?i)^(l.ordre de melchis[ée]d(ech|ek|eck)\b|broch\b|sujet\s*:|inspiration\s*:)")
+
 # ---------- Analyse d'un document ----------
 def parse(path):
     pages = docx_pages(path) if path.suffix.lower() == ".docx" else pdf_pages(path)
@@ -219,12 +222,11 @@ def parse(path):
     if not place_src:
         venue, city, country = "", "", ""
 
-    # titre (en-tête) et série (lignes avant le titre en majuscules)
-    i_title = next((k for k, l in enumerate(head) if is_upper_line(l) and not l.lower().startswith("broch")), None)
+    # titre en majuscules ; les lignes placées avant (bandeaux) sont ignorées.
+    # Le thème de la série ne vient PAS du document : il est saisi dans conventions.xlsx.
+    i_title = next((k for k, l in enumerate(head) if is_upper_line(l) and not IGNORE_RE.match(l)), None)
     series = ""
-    if i_title is not None:
-        pre = [l for l in head[:i_title] if not re.match(r"(?i)^(broch|sujet|inspiration)", l) and not find_date(l)]
-        series = " ".join(pre).strip()
+    banner = set(head[:i_title]) if i_title is not None else set()
     title_upper = ""
     if i_title is not None:
         k = i_title; tl = []
@@ -255,7 +257,7 @@ def parse(path):
             if p_i == 0 and l:
                 if skipped <= body_start_line:
                     skipped += 1; continue
-            if l in repeated or (l.isdigit() and len(l) <= 3) or l in footer_titles or (series and l == series):
+            if l in repeated or (l.isdigit() and len(l) <= 3) or l in footer_titles or l in banner or IGNORE_RE.match(l):
                 continue
             body.append(l)
 
@@ -334,6 +336,50 @@ def parse(path):
 def slug(x):
     return re.sub(r"[^a-z0-9]+", "-", norm(x)).strip("-")
 
+# ---------- Thèmes de série saisis à la main : conventions.xlsx ----------
+CONV_XLSX = Path(sys.argv[3]) if len(sys.argv) > 3 else Path(__file__).resolve().parent.parent / "conventions.xlsx"
+COL_DOSSIER, COL_THEME = "Dossier", "Thème de la série"
+
+def read_themes(path):
+    if not path.exists(): return {}
+    import openpyxl
+    ws = openpyxl.load_workbook(path, read_only=True)["Conventions"]
+    rows = list(ws.iter_rows(values_only=True))
+    h = [str(x or "").strip() for x in rows[0]]
+    i_d, i_t = h.index(COL_DOSSIER), h.index(COL_THEME)
+    return {str(r[i_d]).strip(): str(r[i_t] or "").strip() for r in rows[1:] if r[i_d]}
+
+def sync_xlsx(path, convs):
+    """Ajoute les nouveaux dossiers et met à jour les colonnes d'information (ville, pays, dates, nombre)."""
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    if not path.exists(): return "absent"
+    wb = openpyxl.load_workbook(path)
+    ws = wb["Conventions"]
+    h = [str(c.value or "").strip() for c in ws[1]]
+    col = {name: h.index(name) + 1 for name in h if name}
+    rows = {str(ws.cell(r, col[COL_DOSSIER]).value).strip(): r for r in range(2, ws.max_row + 1) if ws.cell(r, col[COL_DOSSIER]).value}
+    changed = False
+    thin = Side(style="thin", color="D9D2C3")
+    for c in convs:
+        r = rows.get(c["folder"])
+        if r is None:
+            r = ws.max_row + 1; rows[c["folder"]] = r
+            ws.cell(r, col[COL_DOSSIER], c["folder"]); changed = True
+            for k in col.values():
+                cell = ws.cell(r, k); cell.font = Font(name="Arial", size=10); cell.border = Border(bottom=thin)
+                cell.alignment = Alignment(vertical="top", wrap_text=True)
+            ws.cell(r, col[COL_THEME]).fill = PatternFill("solid", fgColor="FFF4CC")
+        for name, val in (("Ville", c["city"]), ("Pays", c["country"]), ("Dates", c["dates"]), ("Prédications", c["count"])):
+            if name in col and ws.cell(r, col[name]).value != val:
+                ws.cell(r, col[name], val); changed = True
+    if changed:
+        try: wb.save(path)
+        except PermissionError: return "ouvert"
+    return "ok"
+
+THEMES_SERIE = read_themes(CONV_XLSX)
+
 files = sorted(f for f in SRC.rglob("*") if f.suffix.lower() in (".pdf", ".docx") and not f.name.startswith("~$"))
 groups, problems = {}, []
 for f in files:
@@ -370,10 +416,9 @@ for key, g in groups.items():
     country = country[0][0] if country else ""
     venue = Counter(x["venue"] for x in ss if x["venue"]).most_common(1)
     venue = venue[0][0] if venue else ""
-    series = Counter(x["series"] for x in ss if x["series"]).most_common(1)
-    series = series[0][0] if series else ""
+    series = THEMES_SERIE.get(g["folder"] or key, "")
     for x in ss:
-        if not x["series"]: x["series"] = series
+        x["series"] = series
         x["city"] = city
         if not x["country"]: x["country"] = country
         x["place"] = ", ".join(v for v in [x["venue"], city, x["country"]] if v)
@@ -386,7 +431,7 @@ for key, g in groups.items():
     elif m == m2: dates = f"du {d1} au {d2} {MOIS[m-1]} {y}"
     else: dates = f"du {d1} {MOIS[m-1]} au {d2} {MOIS[m2-1]} {last['date'][:4]}"
     name = ("Convention d'" if norm(city[:1]) in "aeiouyh" else "Convention de ") + city
-    conventions.append({"id": cid, "name": name, "city": city, "country": country, "venue": venue,
+    conventions.append({"folder": g["folder"] or key, "id": cid, "name": name, "city": city, "country": country, "venue": venue,
                         "series": series, "start": first["date"], "end": last["date"], "dates": dates,
                         "preachers": sorted({x["preacher"] for x in ss}), "count": len(ss)})
     for x in ss:
@@ -395,6 +440,7 @@ for key, g in groups.items():
         while x["id"] in seen: x["id"] = f"{base}-{n}"; n += 1
         seen.add(x["id"]); sermons.append(x)
 conventions.sort(key=lambda c: c["start"], reverse=True)
+xl_state = sync_xlsx(CONV_XLSX, conventions)
 
 import datetime
 lib = {
@@ -411,6 +457,10 @@ for c in conventions:
     if c["series"]: print(f"  Thème : {c['series']}")
     for x in [s for s in sermons if s["conv"] == c["id"]]:
         print(f"  {x['date']} {x['moment'] or '—':5} | {x['title'][:70]} | {len(x['paragraphs'])} §, {len(x['refs'])} réf.")
+sans_theme = [c["folder"] for c in conventions if not c["series"]]
+if sans_theme: print(f"\nℹ Thème de série non renseigné pour : {', '.join(sans_theme)} (fichier {CONV_XLSX.name})")
+if xl_state == "ouvert": print(f"\n⚠ {CONV_XLSX.name} est ouvert dans Excel : les nouveaux dossiers n'ont pas pu y être ajoutés. Fermez-le et relancez.")
+if xl_state == "absent": print(f"\n⚠ Fichier {CONV_XLSX} introuvable : aucun thème de série appliqué.")
 for w in warnings_: print("\n⚠", w)
 for p_ in problems: print("\n✖ Ignoré :", p_)
 print(f"\nTotal : {len(conventions)} conventions, {len(sermons)} prédications — {OUT.stat().st_size // 1024} Ko")

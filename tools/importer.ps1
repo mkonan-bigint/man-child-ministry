@@ -36,12 +36,12 @@ if (-not $python) {
 }
 Write-Host "Python utilisé : $python"
 
-Write-Host "Vérification des modules Python (pymupdf, python-docx)..."
-& $python -m pip install --quiet --disable-pip-version-check pymupdf python-docx
+Write-Host "Vérification des modules Python (pymupdf, python-docx, openpyxl)..."
+& $python -m pip install --quiet --disable-pip-version-check pymupdf python-docx openpyxl --no-warn-script-location
 if ($LASTEXITCODE -ne 0) { Write-Host "Installation des modules impossible (connexion Internet ?)." -ForegroundColor Red; exit 1 }
 
 Write-Host "Import depuis : $Source"
-& $python "$PSScriptRoot\extract.py" "$Source" "$repo\www\library.json"
+& $python "$PSScriptRoot\extract.py" "$Source" "$repo\www\library.json" "$repo\conventions.xlsx"
 if ($LASTEXITCODE -ne 0) { Write-Host "L'import a échoué (voir le message ci-dessus)." -ForegroundColor Red; exit 1 }
 
 Write-Host ""

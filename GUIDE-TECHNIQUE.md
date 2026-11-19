@@ -33,6 +33,9 @@ www\library.json  ── git push ──►  GitHub
 | `assets\` | Sources de l'icône et de l'écran de démarrage Android |
 | `tools\extract.py` | Lecture des PDF et Word, découpage, versets, thèmes |
 | `tools\importer.ps1` | Commande Windows qui lance l'import |
+| `tools\renommer-fichiers.ps1` | Renommage ponctuel des fichiers existants (novembre 2026) |
+| `conventions.xlsx` | Thème de la série de chaque convention, saisi à la main |
+| `FORMAT-DES-DOCUMENTS.md` | Format recommandé et liste des documents à corriger |
 | `.github\workflows\build.yml` | Compilation de l'APK et publication de la version web |
 | `package.json`, `capacitor.config.json` | Configuration du projet Android (Capacitor) |
 | `signature-android.keystore` et fichiers `SECRETS-*` | Clé de signature de l'APK. **Confidentiel, exclu de Git** |
@@ -124,31 +127,50 @@ Man Child Ministry\
 
 ### 4.2 Nom des fichiers
 
+Format conseillé :
+
 ```
 AAAA MMJJ[M|S] Titre _ Prédicateur.pdf
 ```
 
 - `AAAA MMJJ` : la date, par exemple `2025 1225` pour le 25 décembre 2025.
-- `M` = matin, `S` = soir.
+- `M` = matin, `S` = soir. Facultatif si le moment figure dans l'en-tête.
 - Le **titre affiché** dans l'application est celui du nom de fichier. On corrige un titre en renommant le fichier.
 
-Exemple : `2025 1225M Père, que le feu tombe _ Pst John Conteh.pdf`
+Le script tolère aussi les variantes rencontrées, par exemple :
+- `2021 1224 - Titre _ Pasteur John Conteh. prt 1 docx.docx`
+- `… _ Part1Pst J. CONTEH.pdf`
+- `… _.pdf`
 
-### 4.3 En-tête attendu dans chaque document
+Les mentions « prt 1 », « Part1 » ou « Partie 2 » deviennent « (partie 1) » ou « (partie 2) » dans le titre. Les mentions « docx » ou « CONV » sont retirées.
 
-Le script lit les informations de la convention dans les premières lignes du document :
+> Le format recommandé, avec la liste des documents actuels à corriger, est détaillé dans **[FORMAT-DES-DOCUMENTS.md](FORMAT-DES-DOCUMENTS.md)**.
+
+### 4.3 En-tête du document
+
+Le script lit, dans les premières lignes du document :
+
+| Information | Comment elle est trouvée | Si elle est absente |
+|---|---|---|
+| **Date** | Première date en toutes lettres (« 25 Décembre 2025 ») | Date du nom de fichier |
+| **Matin / soir** | Mot « matin » ou « soir » près de la date | Lettre M ou S du nom de fichier, sinon aucun |
+| **Prédicateur** | Ligne commençant par « Pasteur », « Pst », « Frère »… | Nom de fichier, sinon « Pasteur John Conteh » |
+| **Lieu, ville, pays** | Ligne de la date ou ligne suivante. Le pays est reconnu dans une liste (Côte d'Ivoire, Madagascar, Togo…) et la ville est le mot qui le précède | Pays le plus fréquent de la convention |
+| **Thème (série)** | **Pas lu dans le document** : saisi à la main dans `conventions.xlsx` (voir § 4.6) | Convention affichée sans thème |
+
+Formats d'en-tête reconnus, par exemple :
 
 ```
-L'ordre de Melchisédech, le secret de l'immortalité dans la plénitude des temps   ← thème (série)
-PÈRE, QUE LE FEU TOMBE                                                            ← titre
-Pasteur John Conteh                                                               ← prédicateur (ligne commençant par « Pasteur »)
-Jeudi matin, 25 Décembre 2025                                                     ← jour, moment, date
-ACL Dynastie Éternelle _ Abidjan-Côte d'Ivoire                                    ← lieu _ Ville-Pays
-________________________________________________                                  ← séparateur (facultatif)
+ACL Dynastie Éternelle _ Abidjan-Côte d'Ivoire
+Tananarive, Madagascar - Jeudi 14 Août 2025 _ Matin
+Abidjan – Côte d'Ivoire, 28 Mai 2023 Matin
+Le 24 Décembre 2021 / Dabou - Côte D'Ivoire
 ```
 
-- Le lieu doit suivre le format **`Lieu _ Ville-Pays`**. La ville et le pays sont séparés par le premier tiret.
-- Les en-têtes et pieds de page répétés ainsi que la page finale « Ce message du Pasteur… » sont retirés automatiquement.
+- **Ville de la convention** : si le sous-dossier est nommé `AAAA-MM Ville`, c'est cette ville qui est affichée. Le script signale par « ⚠ » une différence avec les en-têtes, par exemple « Tamatave » pour le dossier et « Tananarive » dans les PDF.
+- La ligne « L'ordre de Melchisédech, le secret de l'immortalité dans la plénitude des temps », ainsi que les lignes « broch - N° », « Sujet : » et « Inspiration : », sont **ignorées**.
+- Sont retirés automatiquement : les en-têtes et pieds de page répétés, les numéros de page, les numéros de paragraphe d'origine et la page finale « Ce message du Pasteur… ».
+- Un fichier illisible (PDF scanné, document vide) est **ignoré** et signalé par « ✖ ». L'import continue avec les autres fichiers.
 
 ### 4.4 Lancer l'import
 
@@ -162,7 +184,7 @@ Pour un autre dossier source :
 powershell -ExecutionPolicy Bypass -File "C:\Dev Projects\Man Child Ministry\tools\importer.ps1" -Source "D:\Prédications"
 ```
 
-Le script affiche une ligne par prédication : identifiant, titre, nombre de paragraphes, versets trouvés et principaux thèmes. **Contrôler cette liste avant de publier.**
+Le script affiche le résultat par convention : ville, pays, dates, thème, puis une ligne par prédication (date, moment, titre, nombre de paragraphes et de versets). Il affiche aussi les alertes « ⚠ » et les fichiers ignorés « ✖ ». **Contrôler ce résumé avant de publier.**
 
 ### 4.5 Publier
 
@@ -180,6 +202,18 @@ Quelques minutes plus tard :
 - les téléphones déjà installés reçoivent les nouvelles prédications à leur prochaine connexion, avec le message « X nouvelles prédications ajoutées ».
 
 ---
+
+### 4.6 Thème de la série de chaque convention
+
+Le thème de chaque convention se saisit dans **`conventions.xlsx`**, à la racine du projet :
+
+- onglet **Conventions** : une ligne par sous-dossier, et le thème se tape dans la colonne **« Thème de la série »** (cellules jaunes) ;
+- les colonnes Ville, Pays, Dates et Prédications sont remplies automatiquement à chaque import ;
+- un nouveau sous-dossier est ajouté automatiquement au fichier lors de l'import. Il suffit ensuite de saisir son thème et de relancer l'import ;
+- **fermer le fichier dans Excel avant de lancer l'import** ;
+- ne pas renommer l'onglet « Conventions » ni les en-têtes « Dossier » et « Thème de la série ».
+
+Après une modification des thèmes : relancer l'import, puis publier `www/library.json` et `conventions.xlsx` avec Git.
 
 ## 5. Fonctionnement de l'application
 
@@ -220,7 +254,9 @@ Toutes ces modifications se font dans `tools\extract.py`. Il faut ensuite **rela
 
 | Problème | Cause probable | Solution |
 |---|---|---|
-| L'import s'arrête sur un fichier | En-tête différent du format attendu (§ 4.3) | Corriger l'en-tête du document, ou envoyer le fichier pour adapter le script |
+| Un fichier est signalé « ✖ Ignoré » | Document illisible, scanné ou vide | Vérifier le fichier, ou l'envoyer pour adapter le script |
+| Alerte « ⚠ » sur la ville | Nom du sous-dossier différent de la ville des en-têtes | Renommer le sous-dossier si la ville des en-têtes est la bonne |
+| « Python est introuvable » | Seul le raccourci du Microsoft Store est présent | `importer.ps1` cherche aussi Miniconda et Anaconda. Sinon, installer Python depuis python.org |
 | Une prédication a un titre vide ou faux | Nom de fichier hors format (§ 4.2) | Renommer le fichier puis relancer l'import |
 | Une recherche ne trouve rien dans un PDF | PDF scanné (image, pas de texte) | Passer le PDF à la reconnaissance de caractères (OCR) ou utiliser la version Word |
 | La tâche **pages** échoue | Pages pas configuré | Settings → Pages → Source : **GitHub Actions** |
