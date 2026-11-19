@@ -1,5 +1,7 @@
 # Man Child Ministry
 
+> Mise en place, ajout de prédications, publication et dépannage : voir le **[Guide technique](GUIDE-TECHNIQUE.md)**.
+
 Application pour lire, rechercher et étudier les prédications des conventions.
 
 - **Android** : APK téléchargeable depuis la dernière *Release* du dépôt (`ManChildMinistry.apk`).
