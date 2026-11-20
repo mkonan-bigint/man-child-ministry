@@ -5,3 +5,8 @@ android/
 __pycache__/
 *.base64.txt
 SECRETS-*.txt
+
+# Thèmes de série saisis à la main : non versionnés (fichier local)
+conventions.xlsx
+# Fichiers temporaires d'Excel
+~$*

@@ -34,7 +34,7 @@ www\library.json  ── git push ──►  GitHub
 | `tools\extract.py` | Lecture des PDF et Word, découpage, versets, thèmes |
 | `tools\importer.ps1` | Commande Windows qui lance l'import |
 | `tools\renommer-fichiers.ps1` | Renommage ponctuel des fichiers existants (novembre 2026) |
-| `conventions.xlsx` | Thème de la série de chaque convention, saisi à la main |
+| `conventions.xlsx` | Thème de la série de chaque convention, saisi à la main. **Local, non versionné** |
 | `FORMAT-DES-DOCUMENTS.md` | Format recommandé et liste des documents à corriger |
 | `.github\workflows\build.yml` | Compilation de l'APK et publication de la version web |
 | `package.json`, `capacitor.config.json` | Configuration du projet Android (Capacitor) |
@@ -213,7 +213,9 @@ Le thème de chaque convention se saisit dans **`conventions.xlsx`**, à la raci
 - **fermer le fichier dans Excel avant de lancer l'import** ;
 - ne pas renommer l'onglet « Conventions » ni les en-têtes « Dossier » et « Thème de la série ».
 
-Après une modification des thèmes : relancer l'import, puis publier `www/library.json` et `conventions.xlsx` avec Git.
+Après une modification des thèmes : relancer l'import, puis publier `www/library.json` avec Git.
+
+> `conventions.xlsx` **n'est pas versionné** (exclu par `.gitignore`). C'est un fichier local : en garder une copie de sauvegarde, car sans lui un nouvel import produit une bibliothèque sans thèmes.
 
 ## 5. Fonctionnement de l'application
 

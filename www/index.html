@@ -193,15 +193,18 @@ const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'
 const MONTHS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 const fmtDate = d => { const [y,m,dd] = d.split("-"); return `${+dd} ${MONTHS[m-1]} ${y}` };
 const sermon = id => LIB.sermons.find(s => s.id === id);
+const pill = s => s.moment ? `<span class="pill ${s.moment === "Matin" ? "m" : "s"}">${s.moment === "Matin" ? "☀" : "☾"} ${s.moment}</span>` : "";
+const when = s => (s.jour + (s.moment ? " " + s.moment.toLowerCase() : "")).trim();
 const conv = id => LIB.conventions.find(c => c.id === id);
 const MABR = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
 const shortDates = c => { const [y1,m1,d1] = c.start.split("-"), [y2,m2,d2] = c.end.split("-");
+  if (c.start === c.end) return `${+d1} ${MABR[m1-1]} ${y1}`;
   return m1 === m2 ? `${+d1}–${+d2} ${MABR[m1-1]} ${y1}` : `${+d1} ${MABR[m1-1]} – ${+d2} ${MABR[m2-1]} ${y2}` };
 let convFilter = "";   // filtre de convention (recherche / thèmes)
 function convChips(){
   if (LIB.conventions.length < 2) return "";
   return `<div class="chips" id="convChips" style="margin:10px 0 4px"><button class="chip ${convFilter ? "" : "on"}" data-cf="">Toutes les conventions</button>` +
-    LIB.conventions.map(c => `<button class="chip ${convFilter === c.id ? "on" : ""}" data-cf="${c.id}">${esc(c.city)} · ${c.start.slice(0,4)}</button>`).join("") + `</div>`;
+    LIB.conventions.map(c => `<button class="chip ${convFilter === c.id ? "on" : ""}" data-cf="${c.id}">${esc(c.city)} · ${MABR[+c.start.slice(5,7)-1]} ${c.start.slice(0,4)}</button>`).join("") + `</div>`;
 }
 function bindConvChips(after){ view.querySelectorAll("[data-cf]").forEach(b => b.onclick = () => { convFilter = b.dataset.cf; after() }) }
 const inFilter = sid => !convFilter || sermon(sid).conv === convFilter;
@@ -282,7 +285,7 @@ function sermonCard(s){
   const top = Object.entries(s.themes).sort((a,b) => b[1]-a[1]).slice(0,3)
     .map(([t]) => `<span class="chip">${esc(LIB.themes.find(x => x.id === t).label)}</span>`).join("");
   return `<button class="card" data-go="s-${sidHash(s.id)}">
-    <div class="meta"><span class="pill ${s.moment === "Matin" ? "m" : "s"}">${s.moment === "Matin" ? "☀" : "☾"} ${s.moment}</span>${s.minutes} min de lecture</div>
+    <div class="meta">${pill(s)}${s.minutes} min de lecture</div>
     <h3>${esc(s.title)}</h3><div class="chips">${top}</div></button>`;
 }
 function renderHome(){
@@ -303,12 +306,12 @@ function renderHome(){
   const last = store.get("last", null);
   if (last && sermon(last.id)){
     const s = sermon(last.id), c = conv(s.conv);
-    html += `<h2 class="sec">REPRENDRE LA LECTURE</h2><button class="card" data-go="s-${sidHash(s.id)}-p${last.i}"><div class="meta">${esc(c.city)} · ${s.jour} ${s.moment.toLowerCase()} · § ${last.i}</div><h3>${esc(s.title)}</h3></button>`;
+    html += `<h2 class="sec">REPRENDRE LA LECTURE</h2><button class="card" data-go="s-${sidHash(s.id)}-p${last.i}"><div class="meta">${esc(c.city)} · ${when(s)} · § ${last.i}</div><h3>${esc(s.title)}</h3></button>`;
   }
   html += `<h2 class="sec">LES CONVENTIONS</h2>`;
   C.forEach(c => html += `<button class="card conv" data-go="c-${c.id}">
       <div class="meta"><span class="pill s">📍 ${esc(c.city)}${c.country ? ", " + esc(c.country) : ""}</span>${shortDates(c)}</div>
-      <h3>${esc(c.series)}</h3>
+      <h3>${esc(c.series || c.name + " · " + c.dates)}</h3>
       <div class="meta">${c.count} prédication${c.count > 1 ? "s" : ""} · ${esc(c.preachers.join(", "))}</div></button>`);
   view.innerHTML = html;
   const hh = document.getElementById("hideHint"); if (hh) hh.onclick = () => { store.set("iosHint", true); renderHome() };
@@ -317,7 +320,7 @@ function renderConvention(c){
   setChrome("home", c.name, true);
   const ss = LIB.sermons.filter(s => s.conv === c.id);
   let html = `<section class="hero"><div class="eyebrow">${esc(c.name)} · ${esc(c.country)}</div>
-    <h1>${esc(c.series)}</h1><p>${esc(c.preachers.join(", "))}<br>${esc(c.venue ? c.venue + ", " : "")}${esc(c.city)} · ${esc(c.dates)}</p>
+    <h1>${esc(c.series || c.name)}</h1><p>${esc(c.preachers.join(", "))}<br>${esc(c.venue ? c.venue + ", " : "")}${esc(c.city)} · ${esc(c.dates)}</p>
     <div class="stats"><div><b>${ss.length}</b><span>prédications</span></div><div><b>${new Set(ss.map(s => s.date)).size}</b><span>jours</span></div></div></section>`;
   let day = "";
   ss.forEach(s => {
@@ -334,9 +337,9 @@ function renderParaText(p, s){
 }
 function renderReader(s, focus){
   const c = conv(s.conv);
-  setChrome("home", `${c.city} · ${s.jour} ${s.moment.toLowerCase()} ${fmtDate(s.date)}`, true);
+  setChrome("home", `${c.city} · ${when(s)} ${fmtDate(s.date)}`, true);
   const refs = s.refs.map(r => `<button class="chip" data-q="${esc(r.split(":")[0])}">${esc(r)}</button>`).join("");
-  let html = `<div class="r-head"><button class="r-series" data-go="c-${c.id}" style="text-align:left;padding:0">${esc(c.name)} · ${esc(s.series)}</button><div class="r-title">${esc(s.title)}</div>
+  let html = `<div class="r-head"><button class="r-series" data-go="c-${c.id}" style="text-align:left;padding:0">${esc(c.name)}${s.series ? " · " + esc(s.series) : ""}</button><div class="r-title">${esc(s.title)}</div>
     <div class="r-meta">${esc(s.preacher)}<br>${esc(s.dateLabel)} · ${esc(s.place)}<br>${s.paragraphs.length} paragraphes · ${s.minutes} min</div>
     ${refs ? `<div class="chips" style="margin-top:10px">${refs}</div>` : ""}
     <div class="r-tools"><button class="tool" id="fMinus">A−</button><button class="tool" id="fPlus">A+</button>
@@ -402,7 +405,7 @@ function doSearch(){
   let html = `<div class="hint"><b>${hits.length}</b> passage${hits.length > 1 ? "s" : ""} dans <b>${Object.keys(by).length}</b> prédication${Object.keys(by).length > 1 ? "s" : ""}</div>`;
   LIB.sermons.filter(s => by[s.id]).forEach(s => {
     const list = by[s.id];
-    html += `<div class="res-group"><div class="res-title">${esc(s.title)}<span>${list.length} · ${esc(conv(s.conv).city)} · ${s.jour.slice(0,3)}. ${s.moment.toLowerCase()}</span></div>`;
+    html += `<div class="res-group"><div class="res-title">${esc(s.title)}<span>${list.length} · ${esc(conv(s.conv).city)} · ${esc(fmtDate(s.date))}</span></div>`;
     list.slice(0, 25).forEach(h => html += `<button class="res" data-go="s-${sidHash(s.id)}-p${h.i}"><small>§ ${h.i}</small>${snippet(h.t, terms)}</button>`);
     if (list.length > 25) html += `<div class="hint">… et ${list.length - 25} autres passages dans cette prédication.</div>`;
     html += `</div>`;
@@ -440,7 +443,7 @@ function renderTheme(id){
   const ss = LIB.sermons.filter(s => s.themes[id] && inFilter(s.id)).sort((a,b) => b.themes[id] - a.themes[id]);
   let html = `<div class="r-head"><div class="r-series">Thème d'étude</div><div class="r-title">${esc(t.label)}</div><div class="r-meta">Présent dans ${ss.length} prédication${ss.length > 1 ? "s" : ""}${convFilter ? " · " + esc(conv(convFilter).name) : ""}</div></div>`;
   html += `<h2 class="sec">OÙ EN EST-IL QUESTION ?</h2>`;
-  ss.forEach(s => html += `<button class="card" data-go="s-${sidHash(s.id)}"><div class="meta"><span class="pill ${s.moment === "Matin" ? "m" : "s"}">${s.moment}</span>${esc(conv(s.conv).city)} · ${fmtDate(s.date)} · ${s.themes[id]} mention${s.themes[id] > 1 ? "s" : ""}</div><h3>${esc(s.title)}</h3></button>`);
+  ss.forEach(s => html += `<button class="card" data-go="s-${sidHash(s.id)}"><div class="meta">${pill(s)}${esc(conv(s.conv).city)} · ${fmtDate(s.date)} · ${s.themes[id]} mention${s.themes[id] > 1 ? "s" : ""}</div><h3>${esc(s.title)}</h3></button>`);
   // passages les plus denses
   const scored = IDX.filter(x => inFilter(x.sid)).map(x => ({...x, sc: kws.reduce((a,k) => a + x.n.split(k).length - 1, 0)})).filter(x => x.sc).sort((a,b) => b.sc - a.sc || a.t.length - b.t.length).slice(0, 12);
   html += `<h2 class="sec">PASSAGES CLÉS</h2>`;
@@ -469,7 +472,15 @@ function loadLib(lib){
   LIB.sermons.forEach(s => s.paragraphs.forEach(p => IDX.push({sid: s.id, i: p.i, t: p.t, n: norm(p.t)})));
   route();
 }
-function cachedLib(){ try{ const t = localStorage.getItem("mcm:lib"); return t ? JSON.parse(t) : null }catch(e){ return null } }
+async function cachedLib(){
+  try{ if (window.caches){ const r = await (await caches.open("mcm-data")).match("library-cache.json"); if (r) return await r.json() } }catch(e){}
+  try{ const t = localStorage.getItem("mcm:lib"); return t ? JSON.parse(t) : null }catch(e){ return null }
+}
+async function saveLib(lib){
+  const txt = JSON.stringify(lib);
+  try{ if (window.caches){ await (await caches.open("mcm-data")).put("library-cache.json", new Response(txt, {headers: {"Content-Type": "application/json"}})); try{ localStorage.removeItem("mcm:lib") }catch(e){} return } }catch(e){}
+  try{ localStorage.setItem("mcm:lib", txt) }catch(e){}
+}
 async function checkUpdate(){
   if (!CFG.remoteLibrary || !navigator.onLine) return;
   try{
@@ -477,18 +488,18 @@ async function checkUpdate(){
     if (!r.ok) return;
     const lib = await r.json();
     if (lib.version > LIB.version){
-      try{ localStorage.setItem("mcm:lib", JSON.stringify(lib)) }catch(e){}
+      await saveLib(lib);
       const added = lib.sermons.length - LIB.sermons.length;
       loadLib(lib);
       toast(added > 0 ? `${added} nouvelle${added > 1 ? "s" : ""} prédication${added > 1 ? "s" : ""} ajoutée${added > 1 ? "s" : ""}` : "Bibliothèque mise à jour");
     }
   }catch(e){}
 }
-fetch("library.json").then(r => r.json()).then(bundled => {
-  const c = cachedLib();
+fetch("library.json").then(r => r.json()).then(async bundled => {
+  const c = await cachedLib();
   loadLib(c && c.version > (bundled.version || "") ? c : bundled);
   checkUpdate();
-}).catch(() => { const c = cachedLib(); if (c) loadLib(c); else view.innerHTML = `<div class="empty">Impossible de charger la bibliothèque.</div>` });
+}).catch(async () => { const c = await cachedLib(); if (c) loadLib(c); else view.innerHTML = `<div class="empty">Impossible de charger la bibliothèque.</div>` });
 if ("serviceWorker" in navigator && location.protocol === "https:" && !window.Capacitor){
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
