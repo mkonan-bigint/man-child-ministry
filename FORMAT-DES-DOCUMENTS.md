@@ -12,13 +12,14 @@ Un document conforme est lu sans aucune approximation par l'import (`tools\impor
 
 ```
 Man Child Ministry\
-├── 2025-12 Abidjan\
-├── 2026-05 Abidjan\
-└── 2026-09 Tamatave\
+├── 2025-12 Abidjan, Côte d'Ivoire\
+├── 2025-08 Tananarive, Madagascar\
+└── 2026-05 Abidjan, Côte d'Ivoire\
 ```
 
-- Nom du dossier : **`AAAA-MM Ville`**, avec l'année et le mois du début de la convention.
-- **La ville du nom de dossier est celle affichée dans l'application.** Elle doit être identique à celle de l'en-tête des documents.
+- Nom du dossier : **`AAAA-MM Ville, Pays`**, avec l'année et le mois du début de la convention. `AAAA-MM Ville` seul est aussi accepté.
+- **La ville et le pays du nom de dossier sont ceux affichés dans l'application.** Ils l'emportent sur ce qui est écrit dans les documents.
+- Renommer un dossier ne fait pas perdre son thème dans `conventions.xlsx` : la ligne est retrouvée par l'année, le mois et la ville.
 
 ---
 
@@ -70,7 +71,7 @@ ________________________________________________________________
 | 1 | **Titre** | En MAJUSCULES, sur une ou deux lignes |
 | 2 | **Prédicateur** | Commence par « Pasteur » |
 | 3 | **Jour, moment, date** | `Jour matin, JJ Mois AAAA` ou `Jour soir, JJ Mois AAAA`, avec le mois en toutes lettres |
-| 4 | **Lieu** | `Salle _ Ville-Pays` : la salle, puis espace, tiret bas, espace, puis la ville et le pays reliés par un tiret |
+| 4 | **Lieu** | `Salle _ Ville-Pays` : la salle, puis espace, tiret bas, espace, puis la ville et le pays reliés par un tiret. `Convention de Ville, PAYS` est aussi reconnu |
 | 5 | **Séparateur** | Une ligne de tirets bas `______` qui marque le début du texte |
 
 Bon à savoir :

@@ -122,6 +122,7 @@ Man Child Ministry\
     └── ...
 ```
 
+- Nom des sous-dossiers : **`AAAA-MM Ville, Pays`**, par exemple `2025-12 Abidjan, Côte d'Ivoire`. `AAAA-MM Ville` est aussi accepté. La ville et le pays du dossier sont ceux affichés dans l'application.
 - **Sous-dossiers : recommandés mais pas obligatoires.** Les fichiers posés à la racine sont regroupés automatiquement par thème de la série, ville et mois, lus dans l'en-tête.
 - Formats acceptés : **PDF** (texte, pas de scan) et **Word (.docx)**.
 

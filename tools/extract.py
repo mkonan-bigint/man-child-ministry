@@ -147,6 +147,7 @@ def parse_place(text):
     t = re.sub(r"(?i)\b(le\s+)?\d{1,2}(er)?\s+[a-zéû]+\s+\d{4}\b", " ", t)          # date
     t = re.sub(r"(?i)\b(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\b", " ", t)
     t = re.sub(r"(?i)\b(matin|soir|soirée)\b", " ", t)
+    t = re.sub(r"(?i)^\s*convention\s+(de\s+|d'\s*|du\s+)?", "", t)
     nt = n2(t)
     country = ""; cpos = -1
     for k in sorted(PAYS, key=len, reverse=True):
@@ -200,7 +201,9 @@ def parse(path):
         date = f"{fm.group(1)}-{fm.group(2)}-{fm.group(3)[-2:]}"
     moment = None
     if i_date is not None:
-        moment = find_moment(head[i_date]) or (find_moment(head[i_date + 1]) if i_date + 1 < len(head) and not head[i_date + 1].startswith("___") else None)
+        nxt = head[i_date + 1] if i_date + 1 < len(head) else ""
+        nxt_ok = nxt and len(nxt) <= 90 and not nxt.startswith("___") and not re.match(r"^\d{1,3}\s*[-–.)]", nxt)
+        moment = find_moment(head[i_date]) or (find_moment(nxt) if nxt_ok else None)
     if not moment and fm and fm.group(4): moment = fm.group(4)
     preacher = head[i_pst] if i_pst is not None else ""
     preacher = re.sub(r"(?i)^pst\.?\s*", "Pasteur ", preacher)
@@ -211,10 +214,13 @@ def parse(path):
 
     # lieu : la ligne de date et/ou la suivante
     place_src = ""
+    def header_like(l):  # ligne d'en-tête : courte, pas une phrase du message
+        return l and len(l) <= 90 and not l.startswith("___") and not re.search(r"[!?]\s*$", l) and not re.match(r"^\d{1,3}\s*[-–.)]", l)
     if i_date is not None:
         cand = [head[i_date]]
-        if i_date + 1 < len(head) and not head[i_date + 1].startswith("___") and not is_upper_line(head[i_date + 1]):
-            cand.append(head[i_date + 1])
+        for j in (i_date + 1, i_date - 1):
+            if 0 <= j < len(head) and header_like(head[j]) and not (is_upper_line(head[j]) and j > i_date):
+                cand.append(head[j])
         for c in cand:
             v, c_, p_ = parse_place(c)
             if c_ or p_:
@@ -340,6 +346,10 @@ def slug(x):
 CONV_XLSX = Path(sys.argv[3]) if len(sys.argv) > 3 else Path(__file__).resolve().parent.parent / "conventions.xlsx"
 COL_DOSSIER, COL_THEME = "Dossier", "Thème de la série"
 
+def folder_key(f):
+    """« 2021-12 Dabou, Côte d'Ivoire » et « 2021-12 Dabou » désignent la même convention."""
+    return norm(str(f)).split(",")[0].strip()
+
 def read_themes(path):
     if not path.exists(): return {}
     import openpyxl
@@ -347,7 +357,7 @@ def read_themes(path):
     rows = list(ws.iter_rows(values_only=True))
     h = [str(x or "").strip() for x in rows[0]]
     i_d, i_t = h.index(COL_DOSSIER), h.index(COL_THEME)
-    return {str(r[i_d]).strip(): str(r[i_t] or "").strip() for r in rows[1:] if r[i_d]}
+    return {folder_key(r[i_d]): str(r[i_t] or "").strip() for r in rows[1:] if r[i_d]}
 
 def sync_xlsx(path, convs):
     """Ajoute les nouveaux dossiers et met à jour les colonnes d'information (ville, pays, dates, nombre)."""
@@ -358,13 +368,15 @@ def sync_xlsx(path, convs):
     ws = wb["Conventions"]
     h = [str(c.value or "").strip() for c in ws[1]]
     col = {name: h.index(name) + 1 for name in h if name}
-    rows = {str(ws.cell(r, col[COL_DOSSIER]).value).strip(): r for r in range(2, ws.max_row + 1) if ws.cell(r, col[COL_DOSSIER]).value}
+    rows = {folder_key(ws.cell(r, col[COL_DOSSIER]).value): r for r in range(2, ws.max_row + 1) if ws.cell(r, col[COL_DOSSIER]).value}
     changed = False
     thin = Side(style="thin", color="D9D2C3")
     for c in convs:
-        r = rows.get(c["folder"])
+        r = rows.get(folder_key(c["folder"]))
+        if r is not None and ws.cell(r, col[COL_DOSSIER]).value != c["folder"]:
+            ws.cell(r, col[COL_DOSSIER], c["folder"]); changed = True   # dossier renommé : on suit le nouveau nom
         if r is None:
-            r = ws.max_row + 1; rows[c["folder"]] = r
+            r = ws.max_row + 1; rows[folder_key(c["folder"])] = r
             ws.cell(r, col[COL_DOSSIER], c["folder"]); changed = True
             for k in col.values():
                 cell = ws.cell(r, k); cell.font = Font(name="Arial", size=10); cell.border = Border(bottom=thin)
@@ -391,7 +403,7 @@ for f in files:
         problems.append(f"{f.relative_to(SRC)} : aucun texte extrait (PDF scanné ?)"); continue
     rel = f.parent.relative_to(SRC)
     folder = "" if str(rel) == "." else str(rel)
-    key = folder or f"{s_['city']}|{s_['date'][:7]}"
+    key = folder or f"{s_['date'][:7]} {s_['city']}"   # fichier à la racine : regroupé comme un dossier « AAAA-MM Ville »
     groups.setdefault(key, {"folder": folder, "sermons": []})["sermons"].append(s_)
 
 from collections import Counter
@@ -409,18 +421,24 @@ for key, g in groups.items():
     fm = re.match(r"^\d{4}[-_ ]\d{2}\s+(.+)$", g["folder"])
     head_city = Counter(x["city"] for x in ss if x["city"]).most_common(1)
     head_city = head_city[0][0] if head_city else ""
-    city = fm.group(1).strip() if fm else (head_city or g["folder"] or "Convention")
-    if fm and head_city and n2(head_city) != n2(city):
+    folder_country = ""
+    if fm and "," in fm.group(1):
+        fc = fm.group(1).rsplit(",", 1)
+        folder_city, folder_country = fc[0].strip(), PAYS.get(n2(fc[1].strip()), fc[1].strip())
+    else:
+        folder_city = fm.group(1).strip() if fm else ""
+    city = folder_city or head_city or g["folder"] or "Convention"
+    if folder_city and head_city and n2(head_city) != n2(city):
         warnings_.append(f"{g['folder']} : le dossier indique « {city} » mais les en-têtes indiquent « {head_city} »")
     country = Counter(x["country"] for x in ss if x["country"]).most_common(1)
-    country = country[0][0] if country else ""
+    country = folder_country or (country[0][0] if country else "")
     venue = Counter(x["venue"] for x in ss if x["venue"]).most_common(1)
     venue = venue[0][0] if venue else ""
-    series = THEMES_SERIE.get(g["folder"] or key, "")
+    series = THEMES_SERIE.get(folder_key(g["folder"] or key), "")
     for x in ss:
         x["series"] = series
         x["city"] = city
-        if not x["country"]: x["country"] = country
+        if folder_country or not x["country"]: x["country"] = country
         x["place"] = ", ".join(v for v in [x["venue"], city, x["country"]] if v)
     y, m = first["date"][:4], int(first["date"][5:7])
     cid = slug(f"{y}-{m:02d}-{city}")
